@@ -6,7 +6,7 @@ A Brave/Chrome extension that adds a download button to every post on X.com. Cli
 
 - Downloads videos at the highest available quality (up to 1080p)
 - Downloads full-resolution images (supports multi-photo posts)
-- Blends into X's native UI — sits right in the post action bar
+- Blends into X's native UI, sits right in the post action bar
 - Works on X.com and twitter.com
 - Plays the YOINK sound effect on every download
 
