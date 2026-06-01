@@ -1,3 +1,60 @@
+// ── Update checker ───────────────────────────────────────────────────────────
+const UPDATE_ALARM = "yoink-update-check";
+const UPDATE_URL   = "https://raw.githubusercontent.com/Deathbringer98/YOINK/main/manifest.json";
+
+function newerThan(a, b) {
+  const ap = a.split(".").map(Number);
+  const bp = b.split(".").map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((ap[i] || 0) > (bp[i] || 0)) return true;
+    if ((ap[i] || 0) < (bp[i] || 0)) return false;
+  }
+  return false;
+}
+
+async function checkForUpdate() {
+  try {
+    const res = await fetch(`${UPDATE_URL}?_=${Date.now()}`);
+    if (!res.ok) return;
+    const { version } = await res.json();
+    const current = chrome.runtime.getManifest().version;
+    if (version && newerThan(version, current)) {
+      chrome.storage.local.set({ yoinkUpdateAvailable: version });
+      chrome.notifications.create("yoink-update", {
+        type: "basic",
+        iconUrl: "128x128.png",
+        title: "Yoink update available!",
+        message: `v${version} is ready — click the Yoink icon to download.`,
+        buttons: [{ title: "View on GitHub" }],
+        requireInteraction: false
+      });
+    } else {
+      chrome.storage.local.remove("yoinkUpdateAvailable");
+    }
+  } catch {}
+}
+
+// Register on every service-worker wake so listeners survive restarts
+chrome.runtime.onInstalled.addListener(() => {
+  // Create alarm (idempotent — Chrome dedupes by name)
+  chrome.alarms.create(UPDATE_ALARM, { delayInMinutes: 5, periodInMinutes: 360 });
+  checkForUpdate();
+});
+
+chrome.runtime.onStartup.addListener(checkForUpdate);
+
+chrome.alarms.onAlarm.addListener(alarm => {
+  if (alarm.name === UPDATE_ALARM) checkForUpdate();
+});
+
+chrome.notifications.onButtonClicked.addListener((id, btnIdx) => {
+  if (id === "yoink-update" && btnIdx === 0) {
+    chrome.tabs.create({ url: "https://github.com/Deathbringer98/YOINK" });
+    chrome.notifications.clear("yoink-update");
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 const BEARER_GQL =
   "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA";
 const BEARER_LEGACY =

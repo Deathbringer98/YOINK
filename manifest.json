@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Yoink",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Download X.com videos with the YOINK sound effect.",
   "icons": {
     "16": "128x128.png",
@@ -9,7 +9,7 @@
     "48": "128x128.png",
     "128": "128x128.png"
   },
-  "permissions": ["downloads", "storage", "tabs"],
+  "permissions": ["downloads", "storage", "tabs", "notifications", "alarms"],
   "host_permissions": [
     "https://x.com/*",
     "https://twitter.com/*",
@@ -17,7 +17,8 @@
     "https://api.twitter.com/*",
     "https://cdn.syndication.twimg.com/*",
     "https://pbs.twimg.com/*",
-    "https://video.twimg.com/*"
+    "https://video.twimg.com/*",
+    "https://raw.githubusercontent.com/*"
   ],
   "content_scripts": [
     {

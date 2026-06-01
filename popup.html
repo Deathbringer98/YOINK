@@ -113,9 +113,31 @@
       background: #1d9bf0;
       border-radius: 50%;
     }
+
+    #update-banner {
+      display: none;
+      background: #1d9bf0;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 9px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      text-align: center;
+      line-height: 1.35;
+      transition: opacity 0.15s;
+    }
+    #update-banner:hover { opacity: 0.85; }
+    #update-banner .update-arrow { font-size: 14px; }
   </style>
 </head>
 <body>
+  <a id="update-banner" href="https://github.com/Deathbringer98/YOINK" target="_blank">
+    ✨ Update v<span id="update-ver"></span> available
+    <span class="update-arrow">↓</span>
+  </a>
+
   <img src="128x128.png" alt="Yoink" />
   <h1>Yoink</h1>
   <p>Download videos &amp; images from X with one click.</p>

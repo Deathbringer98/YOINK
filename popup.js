@@ -2,6 +2,14 @@ const toggle = document.getElementById("sound-toggle");
 const slider = document.getElementById("volume-slider");
 const sliderRow = document.getElementById("slider-row");
 
+// Show update banner if a newer version was detected
+chrome.storage.local.get("yoinkUpdateAvailable", ({ yoinkUpdateAvailable }) => {
+  if (yoinkUpdateAvailable) {
+    document.getElementById("update-ver").textContent = yoinkUpdateAvailable;
+    document.getElementById("update-banner").style.display = "block";
+  }
+});
+
 chrome.storage.local.get({ yoinkSoundEnabled: true, yoinkVolume: 1 }, (s) => {
   toggle.checked = s.yoinkSoundEnabled;
   slider.value = Math.round(s.yoinkVolume * 100);
