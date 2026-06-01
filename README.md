@@ -24,13 +24,11 @@ Yoink is an open source project. Contributions, issues, and suggestions are welc
 
 A download icon (↓) appears in the action row under every post that has video or image media. Click it to yoink.
 
-## Open Source
-
-This project is open source and available under the MIT License.
-
 ## License
 
-MIT License
+This project is source-available for personal, non-commercial use only.
+Commercial use, redistribution, and monetization are strictly prohibited.
+See [LICENSE](LICENSE) for full terms.
 
 ## Support
 

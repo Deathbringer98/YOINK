@@ -1,21 +1,94 @@
-MIT License
+YOINK PROPRIETARY LICENSE
 
-Copyright (c) 2026 Deathbringer98
+Copyright (c) 2026 Deathbringer98. All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+NOTICE: This software and its source code are the exclusive intellectual
+property of Deathbringer98 ("the Owner"). By accessing, viewing, downloading,
+or using this software in any form, you agree to be bound by the terms of
+this license. If you do not agree, you are not permitted to use this software.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+─────────────────────────────────────────────────────────────────────────────
+1. GRANT OF LIMITED LICENSE
+─────────────────────────────────────────────────────────────────────────────
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The Owner grants you a limited, non-exclusive, non-transferable,
+non-sublicensable, revocable license to:
+
+  (a) View and study the source code for personal, non-commercial,
+      educational purposes only.
+  (b) Install and use the compiled extension for personal, non-commercial
+      use only.
+
+─────────────────────────────────────────────────────────────────────────────
+2. PROHIBITED ACTIVITIES
+─────────────────────────────────────────────────────────────────────────────
+
+The following are strictly prohibited without express prior written consent
+from the Owner:
+
+  (a) COMMERCIAL USE. You may not use this software, in whole or in part,
+      for any commercial purpose, including but not limited to: selling,
+      licensing, sublicensing, renting, leasing, or offering the software
+      as part of a paid product or service.
+
+  (b) MONETIZATION. You may not generate revenue, directly or indirectly,
+      from this software or any derivative work. This includes but is not
+      limited to: placing advertisements, charging subscription fees,
+      accepting donations in exchange for access, or bundling with any
+      commercial product.
+
+  (c) REDISTRIBUTION. You may not redistribute, publish, or make available
+      this software or any modified version of it — whether in source or
+      compiled form — on any platform, marketplace, or extension store
+      (including but not limited to the Chrome Web Store, Microsoft Edge
+      Add-ons, or any other browser extension marketplace) without the
+      Owner's explicit written permission.
+
+  (d) MODIFICATION AND DERIVATIVE WORKS. You may not create derivative
+      works based on this software for distribution or commercial purposes.
+
+  (e) REVERSE ENGINEERING FOR COMPETITIVE USE. You may not reverse engineer,
+      decompile, or disassemble this software for the purpose of creating a
+      competing product.
+
+─────────────────────────────────────────────────────────────────────────────
+3. ENFORCEMENT AND LEGAL ACTION
+─────────────────────────────────────────────────────────────────────────────
+
+Any violation of the terms of this license constitutes an infringement of
+the Owner's intellectual property rights and will be subject to legal action
+to the fullest extent permitted by applicable law, including but not limited
+to:
+
+  (a) Injunctive relief to immediately halt the infringing activity.
+  (b) Recovery of all profits derived from unauthorized commercial use.
+  (c) Statutory and actual damages as provided under applicable copyright law.
+  (d) Recovery of attorney's fees and all costs of litigation.
+
+The Owner reserves the right to pursue legal remedies in any jurisdiction
+where infringing activity occurs. Violations will be actively monitored and
+pursued without warning.
+
+─────────────────────────────────────────────────────────────────────────────
+4. NO WARRANTY
+─────────────────────────────────────────────────────────────────────────────
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. THE OWNER SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM USE OR
+INABILITY TO USE THIS SOFTWARE.
+
+─────────────────────────────────────────────────────────────────────────────
+5. GOVERNING LAW
+─────────────────────────────────────────────────────────────────────────────
+
+This license shall be governed by and construed in accordance with the laws
+of the United States of America. Any disputes arising under this license
+shall be subject to the exclusive jurisdiction of the courts of the United
+States.
+
+─────────────────────────────────────────────────────────────────────────────
+
+For licensing inquiries or permission requests, contact the Owner via GitHub:
+https://github.com/Deathbringer98
+
+Copyright (c) 2026 Deathbringer98. All Rights Reserved.
