@@ -164,21 +164,6 @@ async function fetchVideoVariants(tweetId, ct0) {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type === "SCREENSHOT") {
-    (async () => {
-      try {
-        const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-        const windowId = tabs[0]?.windowId;
-        if (windowId == null) { sendResponse({ ok: false, error: "no active tab" }); return; }
-        const dataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: "png" });
-        sendResponse({ ok: true, dataUrl });
-      } catch (err) {
-        sendResponse({ ok: false, error: err.message });
-      }
-    })();
-    return true;
-  }
-
   if (message.type === "FETCH_VIDEO") {
     fetchVideoVariants(message.tweetId, message.ct0)
       .then((variants) => sendResponse({ ok: true, variants }))
