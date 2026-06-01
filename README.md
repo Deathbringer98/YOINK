@@ -45,6 +45,7 @@ After loading or reloading the extension, X.com tabs that were already open won'
 
 A regular refresh (`F5`) may not be enough — use the hard refresh to force X to reinitialise with the extension.
 
+Disable Brave Shield if extension isn't working Brave Shield can cause conflict with the extensions ability to function.
 ## License
 
 This project is source-available for personal, non-commercial use only.
