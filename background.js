@@ -1,5 +1,15 @@
-const BEARER =
-  "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I%2BxGezTKlex3yE%2BdOaRuis%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA";
+// Bearer tokens from yt-dlp's actively-maintained Twitter extractor
+const BEARER_GQL =
+  "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA";
+const BEARER_LEGACY =
+  "AAAAAAAAAAAAAAAAAAAAAIK1zgAAAAAA2tUWuhGZ2JceoId5GwYWU5GspY4%3DUq7gzFoCZs1QfwGoVdvSac3IniczZEYXIcDyumCauIXpcAPorE";
+
+// Token formula reverse-engineered by yt-dlp:
+// ((Number(tweetId) / 1e15) * Math.PI).toString(36).replace(/(0+|\.)/g, '')
+function syndicationToken(tweetId) {
+  const n = (Number(tweetId) / 1e15) * Math.PI;
+  return n.toString(36).replace(/[0.]/g, "");
+}
 
 function bitrateToLabel(bitrate) {
   if (bitrate >= 2_000_000) return "1080p";
@@ -10,15 +20,14 @@ function bitrateToLabel(bitrate) {
 }
 
 function variantsFromMediaList(mediaList) {
-  console.log("[Yoink] variantsFromMediaList — count:", mediaList.length, "types:", mediaList.map(m => m.type));
+  console.log("[Yoink] variantsFromMediaList — count:", mediaList.length);
   for (const media of mediaList) {
     if (media.type === "video" || media.type === "animated_gif") {
       const all = media.video_info?.variants || [];
-      console.log("[Yoink] raw variants:", JSON.stringify(all));
       const mp4 = all
         .filter((v) => v.content_type === "video/mp4")
         .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-      console.log("[Yoink] mp4 variants after filter:", JSON.stringify(mp4));
+      console.log("[Yoink] mp4 variants:", JSON.stringify(mp4));
       if (mp4.length)
         return mp4.map((v) => ({
           url: v.url,
@@ -27,143 +36,194 @@ function variantsFromMediaList(mediaList) {
         }));
     }
   }
-  console.warn("[Yoink] variantsFromMediaList — nothing found");
+  console.warn("[Yoink] variantsFromMediaList — nothing usable found");
   return [];
 }
 
-// ── Method 1: twitter.com internal API using user session cookies ──────────
-async function fetchViaSession(tweetId, ct0) {
-  console.log("[Yoink] [1] session API — ct0 present:", !!ct0);
-  const res = await fetch(
-    `https://twitter.com/i/api/1.1/statuses/show.json?id=${tweetId}&tweet_mode=extended`,
-    {
-      headers: { Authorization: `Bearer ${BEARER}`, "x-csrf-token": ct0 },
-      credentials: "include",
-    }
-  );
-  console.log("[Yoink] [1] session API status:", res.status);
-  if (!res.ok) {
-    const body = await res.text().catch(() => "(unreadable)");
-    console.error("[Yoink] [1] session API error body:", body);
-    throw new Error(`session ${res.status}`);
-  }
-  const data = await res.json();
-  console.log("[Yoink] [1] session extended_entities:", JSON.stringify(data.extended_entities));
-  return variantsFromMediaList(data.extended_entities?.media || data.entities?.media || []);
-}
-
-// ── Method 2: guest token (no user cookies needed) ────────────────────────
+// ── Guest token (shared across methods) ──────────────────────────────────
+let cachedGuestToken = null;
 async function getGuestToken() {
-  const res = await fetch("https://api.twitter.com/1.1/guest/activate.json", {
+  if (cachedGuestToken) return cachedGuestToken;
+  console.log("[Yoink] fetching guest token");
+  const res = await fetch("https://api.x.com/1.1/guest/activate.json", {
     method: "POST",
-    headers: { Authorization: `Bearer ${BEARER}` },
+    headers: { Authorization: `Bearer ${BEARER_GQL}` },
+    body: "",
   });
-  console.log("[Yoink] [2] guest/activate status:", res.status);
-  if (!res.ok) throw new Error(`guest/activate ${res.status}`);
+  console.log("[Yoink] guest/activate status:", res.status);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[Yoink] guest/activate error:", body);
+    throw new Error(`guest/activate ${res.status}`);
+  }
   const { guest_token } = await res.json();
-  console.log("[Yoink] [2] guest token:", guest_token);
+  console.log("[Yoink] guest token:", guest_token);
+  cachedGuestToken = guest_token;
+  // Cache expires after 15 min
+  setTimeout(() => { cachedGuestToken = null; }, 15 * 60 * 1000);
   return guest_token;
 }
 
-async function fetchViaGuestToken(tweetId) {
-  console.log("[Yoink] [2] guest token API");
+// ── Method 1: GraphQL TweetResultByRestId (guest token, no login needed) ─
+async function fetchViaGraphQL(tweetId) {
+  console.log("[Yoink] [1] GraphQL");
+  const guestToken = await getGuestToken();
+  const variables = JSON.stringify({
+    tweetId,
+    withCommunity: false,
+    includePromotedContent: false,
+    withVoice: false,
+  });
+  const features = JSON.stringify({
+    creator_subscriptions_tweet_preview_api_enabled: true,
+    tweetypie_unmention_optimization_enabled: true,
+    responsive_web_edit_tweet_api_enabled: true,
+    graphql_is_translatable_rweb_tweet_is_translatable_enabled: true,
+    view_counts_everywhere_api_enabled: true,
+    longform_notetweets_consumption_enabled: true,
+    responsive_web_twitter_article_tweet_consumption_enabled: false,
+    tweet_awards_web_tipping_enabled: false,
+    freedom_of_speech_not_reach_fetch_enabled: true,
+    standardized_nudges_misinfo: true,
+    tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled: true,
+    longform_notetweets_rich_text_read_enabled: true,
+    longform_notetweets_inline_media_enabled: true,
+    responsive_web_graphql_exclude_directive_enabled: true,
+    verified_phone_label_enabled: false,
+    responsive_web_media_download_video_enabled: false,
+    responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
+    responsive_web_graphql_timeline_navigation_enabled: true,
+    responsive_web_enhance_cards_enabled: false,
+  });
+  const url =
+    `https://x.com/i/api/graphql/2ICDjqPd81tulZcYrtpTuQ/TweetResultByRestId` +
+    `?variables=${encodeURIComponent(variables)}&features=${encodeURIComponent(features)}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${BEARER_GQL}`,
+      "x-guest-token": guestToken,
+    },
+    credentials: "include",
+  });
+  console.log("[Yoink] [1] GraphQL status:", res.status);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[Yoink] [1] GraphQL error:", res.status, body.slice(0, 300));
+    throw new Error(`graphql ${res.status}`);
+  }
+  const data = await res.json();
+  const legacy = data?.data?.tweetResult?.result?.legacy;
+  console.log("[Yoink] [1] GraphQL legacy extended_entities:", JSON.stringify(legacy?.extended_entities));
+  return variantsFromMediaList(legacy?.extended_entities?.media || legacy?.entities?.media || []);
+}
+
+// ── Method 2: Syndication API with math-derived token ────────────────────
+async function fetchViaSyndication(tweetId) {
+  console.log("[Yoink] [2] Syndication API");
+  const token = syndicationToken(tweetId);
+  console.log("[Yoink] [2] syndication token:", token);
+  const url = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en&token=${token}`;
+  const res = await fetch(url, { headers: { "User-Agent": "Googlebot" } });
+  console.log("[Yoink] [2] syndication status:", res.status);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[Yoink] [2] syndication error:", body.slice(0, 300));
+    throw new Error(`syndication ${res.status}`);
+  }
+  const data = await res.json();
+  console.log("[Yoink] [2] syndication keys:", Object.keys(data));
+  console.log("[Yoink] [2] syndication mediaDetails:", JSON.stringify(data.mediaDetails));
+  return variantsFromMediaList(data.mediaDetails || []);
+}
+
+// ── Method 3: Legacy REST API with guest token ────────────────────────────
+async function fetchViaLegacy(tweetId) {
+  console.log("[Yoink] [3] Legacy REST API");
   const guestToken = await getGuestToken();
   const res = await fetch(
-    `https://api.twitter.com/1.1/statuses/show.json?id=${tweetId}&tweet_mode=extended`,
+    `https://api.x.com/1.1/statuses/show.json?id=${tweetId}&tweet_mode=extended`,
     {
       headers: {
-        Authorization: `Bearer ${BEARER}`,
+        Authorization: `Bearer ${BEARER_LEGACY}`,
         "x-guest-token": guestToken,
       },
     }
   );
-  console.log("[Yoink] [2] guest token API status:", res.status);
+  console.log("[Yoink] [3] Legacy status:", res.status);
   if (!res.ok) {
-    const body = await res.text().catch(() => "(unreadable)");
-    console.error("[Yoink] [2] guest token error body:", body);
-    throw new Error(`guest ${res.status}`);
+    const body = await res.text().catch(() => "");
+    console.error("[Yoink] [3] Legacy error:", body.slice(0, 300));
+    throw new Error(`legacy ${res.status}`);
   }
   const data = await res.json();
-  console.log("[Yoink] [2] guest extended_entities:", JSON.stringify(data.extended_entities));
+  console.log("[Yoink] [3] Legacy extended_entities:", JSON.stringify(data.extended_entities));
   return variantsFromMediaList(data.extended_entities?.media || data.entities?.media || []);
 }
 
-// ── Method 3: public api.twitter.com bearer only ──────────────────────────
-async function fetchViaPublicAPI(tweetId) {
-  console.log("[Yoink] [3] public api.twitter.com");
+// ── Method 4: Session-based (user must be logged in, uses their cookies) ──
+async function fetchViaSession(tweetId, ct0) {
+  console.log("[Yoink] [4] Session API, ct0 present:", !!ct0);
   const res = await fetch(
-    `https://api.twitter.com/1.1/statuses/show.json?id=${tweetId}&tweet_mode=extended`,
-    { headers: { Authorization: `Bearer ${BEARER}` } }
+    `https://x.com/i/api/1.1/statuses/show.json?id=${tweetId}&tweet_mode=extended`,
+    {
+      headers: {
+        Authorization: `Bearer ${BEARER_GQL}`,
+        "x-csrf-token": ct0,
+      },
+      credentials: "include",
+    }
   );
-  console.log("[Yoink] [3] public API status:", res.status);
+  console.log("[Yoink] [4] Session status:", res.status);
   if (!res.ok) {
-    const body = await res.text().catch(() => "(unreadable)");
-    console.error("[Yoink] [3] public API error body:", body);
-    throw new Error(`public ${res.status}`);
+    const body = await res.text().catch(() => "");
+    console.error("[Yoink] [4] Session error:", body.slice(0, 300));
+    throw new Error(`session ${res.status}`);
   }
   const data = await res.json();
-  console.log("[Yoink] [3] public extended_entities:", JSON.stringify(data.extended_entities));
+  console.log("[Yoink] [4] Session extended_entities:", JSON.stringify(data.extended_entities));
   return variantsFromMediaList(data.extended_entities?.media || data.entities?.media || []);
-}
-
-// ── Method 4: syndication API (no auth) ───────────────────────────────────
-async function fetchViaSyndication(tweetId) {
-  console.log("[Yoink] [4] syndication API");
-  const url =
-    `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en` +
-    `&features=tfw_timeline_list%3A%3Btfw_follower_count_sunset%3Atrue%3Btfw_tweet_edit_backend%3Aon`;
-  const res = await fetch(url);
-  console.log("[Yoink] [4] syndication status:", res.status);
-  if (!res.ok) {
-    const body = await res.text().catch(() => "(unreadable)");
-    console.error("[Yoink] [4] syndication error body:", body);
-    throw new Error(`syndication ${res.status}`);
-  }
-  const data = await res.json();
-  console.log("[Yoink] [4] syndication response keys:", Object.keys(data));
-  console.log("[Yoink] [4] syndication mediaDetails:", JSON.stringify(data.mediaDetails));
-  console.log("[Yoink] [4] syndication full response (first 800 chars):", JSON.stringify(data).slice(0, 800));
-  return variantsFromMediaList(data.mediaDetails || []);
 }
 
 // ── Orchestrator ──────────────────────────────────────────────────────────
 async function fetchVideoVariants(tweetId, ct0) {
-  console.log("[Yoink] ── fetchVideoVariants start — tweetId:", tweetId, "ct0:", !!ct0);
+  console.log("[Yoink] ── start — tweetId:", tweetId, "ct0:", !!ct0);
+
+  try {
+    const v = await fetchViaGraphQL(tweetId);
+    if (v.length) { console.log("[Yoink] ✓ GraphQL"); return v; }
+    console.warn("[Yoink] GraphQL: 0 variants");
+  } catch (e) { console.error("[Yoink] GraphQL threw:", e.message); }
+
+  try {
+    const v = await fetchViaSyndication(tweetId);
+    if (v.length) { console.log("[Yoink] ✓ Syndication"); return v; }
+    console.warn("[Yoink] Syndication: 0 variants");
+  } catch (e) { console.error("[Yoink] Syndication threw:", e.message); }
+
+  try {
+    const v = await fetchViaLegacy(tweetId);
+    if (v.length) { console.log("[Yoink] ✓ Legacy"); return v; }
+    console.warn("[Yoink] Legacy: 0 variants");
+  } catch (e) { console.error("[Yoink] Legacy threw:", e.message); }
 
   if (ct0) {
     try {
       const v = await fetchViaSession(tweetId, ct0);
-      if (v.length) { console.log("[Yoink] ✓ session API succeeded"); return v; }
-      console.warn("[Yoink] session API: 0 variants");
-    } catch (e) { console.error("[Yoink] session API threw:", e.message); }
-  } else {
-    console.warn("[Yoink] no ct0 — skipping session API");
+      if (v.length) { console.log("[Yoink] ✓ Session"); return v; }
+      console.warn("[Yoink] Session: 0 variants");
+    } catch (e) { console.error("[Yoink] Session threw:", e.message); }
   }
 
-  try {
-    const v = await fetchViaGuestToken(tweetId);
-    if (v.length) { console.log("[Yoink] ✓ guest token API succeeded"); return v; }
-    console.warn("[Yoink] guest token API: 0 variants");
-  } catch (e) { console.error("[Yoink] guest token API threw:", e.message); }
-
-  try {
-    const v = await fetchViaPublicAPI(tweetId);
-    if (v.length) { console.log("[Yoink] ✓ public API succeeded"); return v; }
-    console.warn("[Yoink] public API: 0 variants");
-  } catch (e) { console.error("[Yoink] public API threw:", e.message); }
-
-  const v = await fetchViaSyndication(tweetId);
-  if (v.length) { console.log("[Yoink] ✓ syndication succeeded"); return v; }
-  console.error("[Yoink] ✗ all methods exhausted — no variants found");
-  return v;
+  console.error("[Yoink] ✗ all methods exhausted");
+  return [];
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "FETCH_VIDEO") {
-    console.log("[Yoink] FETCH_VIDEO message received — tweetId:", message.tweetId);
+    console.log("[Yoink] FETCH_VIDEO — tweetId:", message.tweetId);
     fetchVideoVariants(message.tweetId, message.ct0)
       .then((variants) => {
-        console.log("[Yoink] sending response — variants:", variants.length);
+        console.log("[Yoink] sending response — variants:", variants.length, variants.map(v => v.quality));
         sendResponse({ ok: true, variants });
       })
       .catch((err) => {
@@ -174,7 +234,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message.type === "DOWNLOAD_VIDEO") {
-    console.log("[Yoink] DOWNLOAD_VIDEO:", message.filename, message.url);
+    console.log("[Yoink] DOWNLOAD_VIDEO:", message.filename);
     chrome.downloads.download(
       { url: message.url, filename: message.filename, saveAs: false },
       () => sendResponse({ ok: true })
