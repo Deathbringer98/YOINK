@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Yoink",
+  "version": "1.0.0",
+  "description": "Download X.com videos with the YOINK sound effect.",
+  "permissions": ["downloads"],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://api.twitter.com/*",
+    "https://cdn.syndication.twimg.com/*",
+    "https://pbs.twimg.com/*",
+    "https://video.twimg.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["yoink.mp3"],
+      "matches": ["https://x.com/*", "https://twitter.com/*"]
+    }
+  ]
+}
