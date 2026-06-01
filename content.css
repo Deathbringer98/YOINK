@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: 34.75px;
   height: 34.75px;
   margin: 0;
