@@ -42,10 +42,6 @@ function imageExt(src) {
   return m ? m[1] : "jpg";
 }
 
-function runtimeAlive() {
-  try { return !!chrome?.runtime?.id; } catch { return false; }
-}
-
 function playYoink() {
   try {
     const audio = new Audio(chrome.runtime.getURL("yoink.mp3"));
@@ -57,6 +53,10 @@ function playYoink() {
 function flash(btn, ok) {
   btn.classList.add(ok ? "yoink-done" : "yoink-fail");
   setTimeout(() => btn.classList.remove("yoink-done", "yoink-fail"), 1800);
+}
+
+function runtimeAlive() {
+  try { return !!chrome?.runtime?.id; } catch { return false; }
 }
 
 function getCt0() {
@@ -92,11 +92,8 @@ function injectButton(article) {
 
     if (media.type === "video") {
       const ct0 = getCt0();
-      console.log("[Yoink] click — tweetId:", tweetId, "ct0 present:", !!ct0, "fallbackUrl:", media.fallbackUrl);
       chrome.runtime.sendMessage({ type: "FETCH_VIDEO", tweetId, ct0 }, (res) => {
-        console.log("[Yoink] FETCH_VIDEO response:", res, "lastError:", chrome.runtime.lastError?.message);
         if (chrome.runtime.lastError || !res?.ok || !res.variants?.length) {
-          console.warn("[Yoink] API fetch failed — trying fallbackUrl:", media.fallbackUrl);
           if (media.fallbackUrl) {
             chrome.runtime.sendMessage({
               type: "DOWNLOAD_VIDEO",
@@ -105,7 +102,6 @@ function injectButton(article) {
             });
             flash(btn, true);
           } else {
-            console.error("[Yoink] no variants and no fallback — giving up");
             flash(btn, false);
           }
           return;
