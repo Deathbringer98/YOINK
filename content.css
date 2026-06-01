@@ -32,3 +32,23 @@
 .yoink-action.yoink-fail {
   color: #f4212e;
 }
+
+.yoink-discord {
+  position: relative;
+}
+
+.yoink-discord:hover {
+  color: #5865F2;
+  background-color: rgba(88, 101, 242, 0.1);
+}
+
+.yoink-discord-badge {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  font-size: 6px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.3px;
+  pointer-events: none;
+}

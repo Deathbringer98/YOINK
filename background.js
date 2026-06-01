@@ -19,6 +19,7 @@ function bitrateToLabel(bitrate) {
 function variantsFromMediaList(mediaList) {
   for (const media of mediaList) {
     if (media.type === "video" || media.type === "animated_gif") {
+      const durationMs = media.video_info?.duration_millis || 0;
       const mp4 = (media.video_info?.variants || [])
         .filter((v) => v.content_type === "video/mp4")
         .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
@@ -27,6 +28,8 @@ function variantsFromMediaList(mediaList) {
           url: v.url,
           bitrate: v.bitrate || 0,
           quality: bitrateToLabel(v.bitrate || 0),
+          // estimated bytes = duration(s) × bitrate(bps) ÷ 8
+          estimatedBytes: durationMs > 0 ? Math.ceil((durationMs / 1000) * (v.bitrate || 0) / 8) : 0,
         }));
     }
   }

@@ -1,5 +1,7 @@
 const DOWNLOAD_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
 
+const DISCORD_LIMIT = 10 * 1024 * 1024; // 10MB
+
 function getTweetId(article) {
   const links = article.querySelectorAll('a[href*="/status/"]');
   for (const link of links) {
@@ -63,6 +65,38 @@ function getCt0() {
   return document.cookie.match(/ct0=([^;]+)/)?.[1] || "";
 }
 
+// Pick highest quality variant estimated to be under 10MB.
+// Falls back to lowest quality if all exceed the limit or size is unknown.
+function bestDiscordVariant(variants) {
+  const fits = variants.filter(v => v.estimatedBytes > 0 && v.estimatedBytes < DISCORD_LIMIT);
+  return fits.length ? fits[0] : variants[variants.length - 1];
+}
+
+function fetchAndDownload(tweetId, ct0, pickVariant, btn, fallbackUrl) {
+  chrome.runtime.sendMessage({ type: "FETCH_VIDEO", tweetId, ct0 }, (res) => {
+    if (chrome.runtime.lastError || !res?.ok || !res.variants?.length) {
+      if (fallbackUrl) {
+        chrome.runtime.sendMessage({
+          type: "DOWNLOAD_VIDEO",
+          url: fallbackUrl,
+          filename: `yoink-${tweetId}.mp4`,
+        });
+        flash(btn, true);
+      } else {
+        flash(btn, false);
+      }
+      return;
+    }
+    const chosen = pickVariant(res.variants);
+    chrome.runtime.sendMessage({
+      type: "DOWNLOAD_VIDEO",
+      url: chosen.url,
+      filename: `yoink-${tweetId}-${chosen.quality}.mp4`,
+    });
+    flash(btn, true);
+  });
+}
+
 function injectButton(article) {
   const media = getMedia(article);
   if (!media) return;
@@ -74,46 +108,22 @@ function injectButton(article) {
   const bar = reply ? reply.closest('[role="group"]') : null;
   if (!bar || bar.querySelector(".yoink-action")) return;
 
+  // ── Standard download button ──────────────────────────────────────────
   const btn = document.createElement("button");
   btn.className = "yoink-action";
   btn.title = "Download media";
   btn.innerHTML = DOWNLOAD_ICON;
-
   bar.appendChild(btn);
 
   btn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
-
     if (!runtimeAlive()) return;
-
     playYoink();
 
     if (media.type === "video") {
-      const ct0 = getCt0();
-      chrome.runtime.sendMessage({ type: "FETCH_VIDEO", tweetId, ct0 }, (res) => {
-        if (chrome.runtime.lastError || !res?.ok || !res.variants?.length) {
-          if (media.fallbackUrl) {
-            chrome.runtime.sendMessage({
-              type: "DOWNLOAD_VIDEO",
-              url: media.fallbackUrl,
-              filename: `yoink-${tweetId}.mp4`,
-            });
-            flash(btn, true);
-          } else {
-            flash(btn, false);
-          }
-          return;
-        }
-        const best = res.variants[0];
-        chrome.runtime.sendMessage({
-          type: "DOWNLOAD_VIDEO",
-          url: best.url,
-          filename: `yoink-${tweetId}-${best.quality}.mp4`,
-        });
-        flash(btn, true);
-      });
+      fetchAndDownload(tweetId, getCt0(), v => v[0], btn, media.fallbackUrl);
     } else {
       media.urls.forEach((src, i) => {
         const full = fullResImage(src);
@@ -126,6 +136,24 @@ function injectButton(article) {
       flash(btn, true);
     }
   });
+
+  // ── Discord button (videos only) ──────────────────────────────────────
+  if (media.type === "video") {
+    const dBtn = document.createElement("button");
+    dBtn.className = "yoink-action yoink-discord";
+    dBtn.title = "Download for Discord (≤10MB)";
+    dBtn.innerHTML = `${DOWNLOAD_ICON}<span class="yoink-discord-badge">10M</span>`;
+    bar.appendChild(dBtn);
+
+    dBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      if (!runtimeAlive()) return;
+      playYoink();
+      fetchAndDownload(tweetId, getCt0(), bestDiscordVariant, dBtn, media.fallbackUrl);
+    });
+  }
 }
 
 function scanAll() {
