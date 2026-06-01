@@ -3,6 +3,12 @@
   "name": "Yoink",
   "version": "1.0.0",
   "description": "Download X.com videos with the YOINK sound effect.",
+  "icons": {
+    "16": "128x128.png",
+    "32": "128x128.png",
+    "48": "128x128.png",
+    "128": "128x128.png"
+  },
   "permissions": ["downloads"],
   "host_permissions": [
     "https://x.com/*",
