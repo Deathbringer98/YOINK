@@ -165,15 +165,17 @@ async function fetchVideoVariants(tweetId, ct0) {
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "SCREENSHOT") {
-    // Query for the active X tab so we always capture the right window,
-    // even if sender.tab is stale or undefined in the service worker.
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-      const windowId = tabs[0]?.windowId;
-      if (windowId == null) { sendResponse({ ok: false, error: "no active tab" }); return; }
-      chrome.tabs.captureVisibleTab(windowId, { format: "png" })
-        .then((dataUrl) => sendResponse({ ok: true, dataUrl }))
-        .catch((err) => sendResponse({ ok: false, error: err.message }));
-    });
+    (async () => {
+      try {
+        const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+        const windowId = tabs[0]?.windowId;
+        if (windowId == null) { sendResponse({ ok: false, error: "no active tab" }); return; }
+        const dataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: "png" });
+        sendResponse({ ok: true, dataUrl });
+      } catch (err) {
+        sendResponse({ ok: false, error: err.message });
+      }
+    })();
     return true;
   }
 

@@ -9,7 +9,7 @@
     "48": "128x128.png",
     "128": "128x128.png"
   },
-  "permissions": ["downloads", "storage", "tabs"],
+  "permissions": ["downloads", "storage", "tabs", "activeTab"],
   "host_permissions": [
     "https://x.com/*",
     "https://twitter.com/*",
