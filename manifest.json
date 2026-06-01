@@ -27,6 +27,10 @@
       "run_at": "document_idle"
     }
   ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Yoink"
+  },
   "background": {
     "service_worker": "background.js"
   },
