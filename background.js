@@ -163,9 +163,9 @@ async function fetchVideoVariants(tweetId, ct0) {
   return [];
 }
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "SCREENSHOT") {
-    chrome.tabs.captureVisibleTab(null, { format: "png" })
+    chrome.tabs.captureVisibleTab(sender.tab.windowId, { format: "png" })
       .then((dataUrl) => sendResponse({ ok: true, dataUrl }))
       .catch((err) => sendResponse({ ok: false, error: err.message }));
     return true;

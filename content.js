@@ -1,7 +1,7 @@
 const DOWNLOAD_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
 const CAMERA_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 100-6.4 3.2 3.2 0 000 6.4z"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>`;
 
-const DISCORD_LIMIT = 10 * 1024 * 1024; // 10MB
+const DISCORD_LIMIT = 10 * 1024 * 1024;
 
 function getTweetId(article) {
   const links = article.querySelectorAll('a[href*="/status/"]');
@@ -24,9 +24,7 @@ function getMedia(article) {
   const photos = [...article.querySelectorAll('[data-testid="tweetPhoto"] img')].filter(
     (img) => !img.closest('[data-testid="videoPlayer"]')
   );
-  if (photos.length) {
-    return { type: "image", urls: photos.map((img) => img.src) };
-  }
+  if (photos.length) return { type: "image", urls: photos.map((img) => img.src) };
   return null;
 }
 
@@ -35,9 +33,7 @@ function fullResImage(src) {
     const u = new URL(src);
     u.searchParams.set("name", "orig");
     return u.toString();
-  } catch {
-    return src;
-  }
+  } catch { return src; }
 }
 
 function imageExt(src) {
@@ -78,11 +74,7 @@ function fetchAndDownload(tweetId, ct0, pickVariant, btn, fallbackUrl) {
   chrome.runtime.sendMessage({ type: "FETCH_VIDEO", tweetId, ct0 }, (res) => {
     if (chrome.runtime.lastError || !res?.ok || !res.variants?.length) {
       if (fallbackUrl) {
-        chrome.runtime.sendMessage({
-          type: "DOWNLOAD_VIDEO",
-          url: fallbackUrl,
-          filename: `yoink-${tweetId}.mp4`,
-        });
+        chrome.runtime.sendMessage({ type: "DOWNLOAD_VIDEO", url: fallbackUrl, filename: `yoink-${tweetId}.mp4` });
         flash(btn, true);
       } else {
         flash(btn, false);
@@ -90,19 +82,14 @@ function fetchAndDownload(tweetId, ct0, pickVariant, btn, fallbackUrl) {
       return;
     }
     const chosen = pickVariant(res.variants);
-    chrome.runtime.sendMessage({
-      type: "DOWNLOAD_VIDEO",
-      url: chosen.url,
-      filename: `yoink-${tweetId}-${chosen.quality}.mp4`,
-    });
+    chrome.runtime.sendMessage({ type: "DOWNLOAD_VIDEO", url: chosen.url, filename: `yoink-${tweetId}-${chosen.quality}.mp4` });
     flash(btn, true);
   });
 }
 
 async function screenshotArticle(article, tweetId, btn) {
-  // Scroll article fully into view and wait for paint
-  article.scrollIntoView({ behavior: "instant", block: "nearest" });
-  await new Promise(r => setTimeout(r, 150));
+  article.scrollIntoView({ behavior: "instant", block: "center" });
+  await new Promise(r => setTimeout(r, 200));
 
   const rect = article.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
@@ -112,21 +99,19 @@ async function screenshotArticle(article, tweetId, btn) {
 
     const img = new Image();
     img.onload = () => {
+      // Clamp crop region to actual image bounds
+      const sx = Math.max(0, Math.round(rect.left * dpr));
+      const sy = Math.max(0, Math.round(rect.top * dpr));
+      const sw = Math.min(Math.round(rect.width * dpr), img.width - sx);
+      const sh = Math.min(Math.round(rect.height * dpr), img.height - sy);
+
       const canvas = document.createElement("canvas");
-      const sw = Math.round(rect.width * dpr);
-      const sh = Math.round(rect.height * dpr);
       canvas.width = sw;
       canvas.height = sh;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(
-        img,
-        Math.round(rect.left * dpr), Math.round(rect.top * dpr),
-        sw, sh,
-        0, 0, sw, sh
-      );
-      const dataUrl = canvas.toDataURL("image/png");
+      canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+
       const a = document.createElement("a");
-      a.href = dataUrl;
+      a.href = canvas.toDataURL("image/png");
       a.download = `yoink-${tweetId}.png`;
       document.body.appendChild(a);
       a.click();
@@ -144,14 +129,14 @@ function injectButton(article) {
 
   const reply = article.querySelector('[data-testid="reply"]');
   const bar = reply ? reply.closest('[role="group"]') : null;
-  if (!bar || bar.querySelector(".yoink-action")) return;
+  if (!bar) return;
 
   const media = getMedia(article);
 
-  // ── HD / SD buttons (media posts only) ───────────────────────────────
-  if (media) {
+  // ── HD / SD buttons — checked independently so lazy-loaded media gets picked up ──
+  if (media && !bar.querySelector(".yoink-hd")) {
     const btn = document.createElement("button");
-    btn.className = "yoink-action";
+    btn.className = "yoink-action yoink-hd";
     btn.title = "Download media (best quality)";
     btn.innerHTML = `${DOWNLOAD_ICON}<span class="yoink-hd-badge">HD</span>`;
     bar.appendChild(btn);
@@ -165,11 +150,7 @@ function injectButton(article) {
       } else {
         media.urls.forEach((src, i) => {
           const full = fullResImage(src);
-          chrome.runtime.sendMessage({
-            type: "DOWNLOAD_VIDEO",
-            url: full,
-            filename: `yoink-${tweetId}-${i + 1}.${imageExt(full)}`,
-          });
+          chrome.runtime.sendMessage({ type: "DOWNLOAD_VIDEO", url: full, filename: `yoink-${tweetId}-${i + 1}.${imageExt(full)}` });
         });
         flash(btn, true);
       }
@@ -191,19 +172,21 @@ function injectButton(article) {
     }
   }
 
-  // ── Screenshot button (every post) ───────────────────────────────────
-  const ssBtn = document.createElement("button");
-  ssBtn.className = "yoink-action yoink-screenshot";
-  ssBtn.title = "Save post as PNG";
-  ssBtn.innerHTML = `${CAMERA_ICON}<span class="yoink-ss-badge">PNG</span>`;
-  bar.appendChild(ssBtn);
+  // ── Screenshot button — independent check, shows on every post ───────
+  if (!bar.querySelector(".yoink-screenshot")) {
+    const ssBtn = document.createElement("button");
+    ssBtn.className = "yoink-action yoink-screenshot";
+    ssBtn.title = "Save post as PNG";
+    ssBtn.innerHTML = `${CAMERA_ICON}<span class="yoink-ss-badge">PNG</span>`;
+    bar.appendChild(ssBtn);
 
-  ssBtn.addEventListener("click", (e) => {
-    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-    if (!runtimeAlive()) return;
-    playYoink();
-    screenshotArticle(article, tweetId, ssBtn);
-  });
+    ssBtn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      if (!runtimeAlive()) return;
+      playYoink();
+      screenshotArticle(article, tweetId, ssBtn);
+    });
+  }
 }
 
 function scanAll() {
