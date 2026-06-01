@@ -2,8 +2,6 @@
 
 A Brave/Chrome extension that adds a download button to every post on X.com. Click it to grab videos and images — and yes, the YOINK sound plays every time.
 
-Yoink is an open source project. Contributions, issues, and suggestions are welcome.
-
 ## Features
 
 - Downloads videos at the highest available quality (up to 1080p)
