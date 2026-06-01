@@ -9,6 +9,7 @@ A Brave/Chrome extension that adds a download button to every post on X.com. Cli
 - Blends into X's native UI, sits right in the post action bar
 - Works on X.com and twitter.com
 - Plays the YOINK sound effect on every download
+<img width="581" height="675" alt="image" src="https://github.com/user-attachments/assets/15ee45db-ec49-4b1c-bf2f-c61b7dca5771" />
 
 ## Installation
 
