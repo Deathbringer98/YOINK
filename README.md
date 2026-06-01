@@ -41,8 +41,7 @@ Commercial use, redistribution, and monetization are strictly prohibited.
 See [LICENSE](LICENSE) for full terms.
 
 ## Support
-
-If this saved you time, buy me a coffee:
 <img width="222" height="220" alt="image" src="https://github.com/user-attachments/assets/64a3defd-fdfe-4caf-b0ee-e505cf438623" />
+If this saved you time, buy me a coffee:
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-ghostbyte-yellow?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/ghostbyte)
