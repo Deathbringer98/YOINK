@@ -22,6 +22,17 @@ A Brave/Chrome extension that adds a download button to every post on X.com. Cli
 
 A download icon (↓) appears in the action row under every post that has video or image media. Click it to yoink.
 
+## Known Issues
+
+**Download button not appearing / Yoink not working after install or update**
+
+After loading or reloading the extension, X.com tabs that were already open won't pick up the new code automatically. Fix: refresh the X tab after installing or updating.
+
+- **Windows/Linux:** `Ctrl + F5`
+- **Mac:** `Cmd + Shift + R`
+
+A regular refresh (`F5`) may not be enough — use the hard refresh to force X to reinitialise with the extension.
+
 ## License
 
 This project is source-available for personal, non-commercial use only.
