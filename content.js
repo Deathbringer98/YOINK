@@ -142,7 +142,7 @@ function injectButton(article) {
     const dBtn = document.createElement("button");
     dBtn.className = "yoink-action yoink-discord";
     dBtn.title = "Download for Discord (≤10MB)";
-    dBtn.innerHTML = `${DOWNLOAD_ICON}<span class="yoink-discord-badge">10M</span>`;
+    dBtn.innerHTML = `${DOWNLOAD_ICON}<span class="yoink-discord-badge">SD</span>`;
     bar.appendChild(dBtn);
 
     dBtn.addEventListener("click", (e) => {
