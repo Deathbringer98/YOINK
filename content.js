@@ -46,9 +46,12 @@ function imageExt(src) {
 
 function playYoink() {
   try {
-    const audio = new Audio(chrome.runtime.getURL("yoink.mp3"));
-    audio.volume = 1;
-    audio.play().catch(() => {});
+    chrome.storage.local.get({ yoinkSoundEnabled: true, yoinkVolume: 1 }, (s) => {
+      if (!s.yoinkSoundEnabled) return;
+      const audio = new Audio(chrome.runtime.getURL("yoink.mp3"));
+      audio.volume = s.yoinkVolume;
+      audio.play().catch(() => {});
+    });
   } catch {}
 }
 

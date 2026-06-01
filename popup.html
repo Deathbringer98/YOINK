@@ -10,7 +10,7 @@
       background: #000;
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      padding: 20px 16px;
+      padding: 20px 16px 16px;
       text-align: center;
     }
 
@@ -35,7 +35,7 @@
       line-height: 1.4;
     }
 
-    a {
+    a.coffee {
       display: block;
       background: #FFDD00;
       color: #000;
@@ -45,17 +45,100 @@
       padding: 10px 14px;
       border-radius: 9999px;
       transition: opacity 0.15s ease;
+      margin-bottom: 16px;
     }
 
-    a:hover { opacity: 0.85; }
+    a.coffee:hover { opacity: 0.85; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      margin-bottom: 14px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .setting-label {
+      font-size: 12px;
+      color: rgb(231, 233, 234);
+    }
+
+    /* Toggle switch */
+    .switch { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-track {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .slider-track::before {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    input:checked + .slider-track { background: #1d9bf0; }
+    input:checked + .slider-track::before { transform: translateX(16px); }
+
+    /* Volume row */
+    #slider-row { gap: 8px; margin-bottom: 4px; }
+    #slider-row .setting-label { white-space: nowrap; }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 3px;
+      background: #333;
+      border-radius: 9999px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: #1d9bf0;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
   <img src="128x128.png" alt="Yoink" />
   <h1>Yoink</h1>
   <p>Download videos &amp; images from X with one click.</p>
-  <a href="https://buymeacoffee.com/ghostbyte" target="_blank">
+
+  <a class="coffee" href="https://buymeacoffee.com/ghostbyte" target="_blank">
     ☕ Buy Me a Coffee
   </a>
+
+  <hr class="divider" />
+
+  <div class="setting-row">
+    <span class="setting-label">🔊 Yoink sound</span>
+    <label class="switch">
+      <input type="checkbox" id="sound-toggle" checked />
+      <span class="slider-track"></span>
+    </label>
+  </div>
+
+  <div class="setting-row" id="slider-row" style="display:flex;">
+    <span class="setting-label">Volume</span>
+    <input type="range" id="volume-slider" min="0" max="100" value="100" />
+  </div>
+
+  <script src="popup.js"></script>
 </body>
 </html>
