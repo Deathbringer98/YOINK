@@ -1,14 +1,17 @@
 # Yoink
 
-A Brave/Chrome extension that adds a download button to every post on X.com. Click it to grab videos and images — and yes, the YOINK sound plays every time.
+A Brave/Chrome extension that adds a download button to every post on X.com. Click it to grab videos and images — and yes, the YOINK sound plays every time (or don't, if you're in a meeting).
 
 ## Features
 
-- Downloads videos at the highest available quality (up to 1080p)
-- Downloads full-resolution images (supports multi-photo posts)
-- Blends into X's native UI, sits right in the post action bar
+- **HD download** — videos at the highest available quality (up to 1080p)
+- **SD / Discord mode** — re-encodes to ≤10 MB so clips share cleanly in Discord
+- **Full-res images** — downloads originals, supports multi-photo posts
+- **PNG screenshot** — saves any post as a clean, styled card image
+- **YOINK sound** — plays on every download; toggle it off or dial the volume in the popup
+- Blends into X's native UI — sits right in the post action bar
 - Works on X.com and twitter.com
-- Plays the YOINK sound effect on every download
+- Auto-update notifications — get a ping when a new version is available
 <img width="581" height="675" alt="image" src="https://github.com/user-attachments/assets/15ee45db-ec49-4b1c-bf2f-c61b7dca5771" />
 
 ## Installation
@@ -21,7 +24,15 @@ A Brave/Chrome extension that adds a download button to every post on X.com. Cli
 
 ## Usage
 
-A download icon (↓) appears in the action row under every post that has video or image media. Click it to yoink.
+Three buttons appear in the action row under every post:
+
+| Button | What it does |
+|--------|-------------|
+| **↓ HD** | Downloads video at the best available quality, or full-res images |
+| **↓ SD** | Downloads video at ≤10 MB (ideal for Discord) — video posts only |
+| **📷 PNG** | Saves the post as a styled card PNG |
+
+Click the extension icon to mute the YOINK sound or adjust the volume.
 
 ## Known Issues
 
