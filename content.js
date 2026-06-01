@@ -111,8 +111,8 @@ function injectButton(article) {
   // ── Standard download button ──────────────────────────────────────────
   const btn = document.createElement("button");
   btn.className = "yoink-action";
-  btn.title = "Download media";
-  btn.innerHTML = DOWNLOAD_ICON;
+  btn.title = "Download media (best quality)";
+  btn.innerHTML = `${DOWNLOAD_ICON}<span class="yoink-hd-badge">HD</span>`;
   bar.appendChild(btn);
 
   btn.addEventListener("click", (e) => {
