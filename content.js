@@ -42,10 +42,16 @@ function imageExt(src) {
   return m ? m[1] : "jpg";
 }
 
+function runtimeAlive() {
+  try { return !!chrome?.runtime?.id; } catch { return false; }
+}
+
 function playYoink() {
-  const audio = new Audio(chrome.runtime.getURL("yoink.mp3"));
-  audio.volume = 1;
-  audio.play().catch(() => {});
+  try {
+    const audio = new Audio(chrome.runtime.getURL("yoink.mp3"));
+    audio.volume = 1;
+    audio.play().catch(() => {});
+  } catch {}
 }
 
 function flash(btn, ok) {
@@ -79,6 +85,8 @@ function injectButton(article) {
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
+
+    if (!runtimeAlive()) return;
 
     playYoink();
 
