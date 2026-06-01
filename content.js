@@ -53,6 +53,10 @@ function flash(btn, ok) {
   setTimeout(() => btn.classList.remove("yoink-done", "yoink-fail"), 1800);
 }
 
+function getCt0() {
+  return document.cookie.match(/ct0=([^;]+)/)?.[1] || "";
+}
+
 function injectButton(article) {
   const media = getMedia(article);
   if (!media) return;
@@ -79,7 +83,8 @@ function injectButton(article) {
     playYoink();
 
     if (media.type === "video") {
-      chrome.runtime.sendMessage({ type: "FETCH_VIDEO", tweetId }, (res) => {
+      const ct0 = getCt0();
+      chrome.runtime.sendMessage({ type: "FETCH_VIDEO", tweetId, ct0 }, (res) => {
         if (chrome.runtime.lastError || !res?.ok || !res.variants?.length) {
           if (media.fallbackUrl) {
             chrome.runtime.sendMessage({
