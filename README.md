@@ -16,9 +16,11 @@ A Brave/Chrome extension that adds a download button to every post on X.com. Cli
 
 ## Installation
 
-### Brave / Chrome
+### Brave / Chrome / Opera
+Opera is Chromium-based and runs the same extension files as Chrome — no separate build needed.
+
 1. Download or clone this repo
-2. Go to `brave://extensions` or `chrome://extensions`
+2. Go to `brave://extensions`, `chrome://extensions`, or `opera://extensions`
 3. Enable **Developer mode** (top-right toggle)
 4. Click **Load unpacked** and select the folder containing `manifest.json`
 
