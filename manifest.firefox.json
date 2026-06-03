@@ -1,0 +1,51 @@
+{
+  "manifest_version": 2,
+  "name": "Yoink",
+  "version": "1.1.0",
+  "description": "Download X.com videos with the YOINK sound effect.",
+  "icons": {
+    "16": "128x128.png",
+    "32": "128x128.png",
+    "48": "128x128.png",
+    "128": "128x128.png"
+  },
+  "permissions": [
+    "downloads",
+    "storage",
+    "tabs",
+    "notifications",
+    "alarms",
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://api.x.com/*",
+    "https://api.twitter.com/*",
+    "https://cdn.syndication.twimg.com/*",
+    "https://pbs.twimg.com/*",
+    "https://video.twimg.com/*",
+    "https://raw.githubusercontent.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["html2canvas.min.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Yoink",
+    "default_icon": { "128": "128x128.png" }
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "web_accessible_resources": ["yoink.mp3"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "yoink@ghostbyte",
+      "strict_min_version": "109.0"
+    }
+  }
+}

@@ -16,11 +16,36 @@ A Brave/Chrome extension that adds a download button to every post on X.com. Cli
 
 ## Installation
 
+### Brave / Chrome
 1. Download or clone this repo
-2. Open Brave (or Chrome) and go to `brave://extensions` / `chrome://extensions`
-3. Enable **Developer mode** (top right toggle)
-4. Click **Load unpacked**
-5. Select the folder containing `manifest.json`
+2. Go to `brave://extensions` or `chrome://extensions`
+3. Enable **Developer mode** (top-right toggle)
+4. Click **Load unpacked** and select the folder containing `manifest.json`
+
+### Firefox
+1. Download or clone this repo
+2. Run the build script to create the Firefox package:
+   ```powershell
+   .\build.ps1 -Firefox
+   ```
+3. Go to `about:addons` → gear icon → **Install Add-on From File…**
+4. Select the generated `yoink-firefox.zip`
+
+> **Temporary install (no zip needed):** go to `about:debugging` → **This Firefox** → **Load Temporary Add-on** → select `manifest.firefox.json` directly from the repo folder. Lasts until Firefox restarts.
+
+### Safari *(requires Mac + Xcode)*
+Safari extensions must be wrapped in a native app using Apple's converter tool. The code is ready — you just need to run the build step on a Mac:
+
+1. Clone the repo on a Mac
+2. Copy `manifest.safari.json` over `manifest.json` in the folder
+3. Open Terminal in the repo folder and run:
+   ```bash
+   xcrun safari-web-extension-converter . --project-location ./safari-build --app-name Yoink --bundle-identifier com.ghostbyte.yoink
+   ```
+4. Open the generated Xcode project, select your team, and hit **Run**
+5. In Safari → **Preferences → Extensions** → enable Yoink
+
+> Distributing on the App Store requires an [Apple Developer account](https://developer.apple.com/programs/) ($99/year). Running locally is free with any Apple ID.
 
 ## Usage
 
